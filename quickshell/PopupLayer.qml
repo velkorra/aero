@@ -4,7 +4,8 @@ import Quickshell.Wayland
 
 // Base for the glass popups (control center, wallpapers, notification history).
 // A full-screen transparent layer catches outside clicks and Escape; the glass
-// panel itself sits next to the bar. Children of a PopupLayer go into the panel.
+// panel itself sits next to the bar. Children of a PopupLayer go into the panel;
+// `overlay` items are placed on the whole layer, above the panel.
 PanelWindow {
     id: root
 
@@ -12,8 +13,12 @@ PanelWindow {
     property int panelWidth: 400
     property int panelHeight: 400
     property bool alignBottom: false
+    // Top edge of the panel on screen; negative means "use alignBottom".
+    property real panelY: -1
 
     default property alias content: panel.content
+    property alias overlay: overlayHolder.data
+    readonly property alias panelItem: panel
 
     signal dismissed()
 
@@ -58,7 +63,9 @@ PanelWindow {
             id: panel
 
             x: Theme.barWidth + 4
-            y: root.alignBottom ? parent.height - height - Theme.gap : Theme.gap
+            y: root.panelY >= 0 ? Math.max(Theme.gap, Math.min(root.panelY, parent.height - height - Theme.gap))
+                : root.alignBottom ? parent.height - height - Theme.gap
+                : Theme.gap
             width: root.panelWidth
             height: Math.min(root.panelHeight, parent.height - 2 * Theme.gap)
             radius: 12
@@ -80,6 +87,13 @@ PanelWindow {
                 anchors.fill: parent
                 acceptedButtons: Qt.AllButtons
             }
+        }
+
+        Item {
+            id: overlayHolder
+
+            anchors.fill: parent
+            visible: root.open
         }
     }
 }

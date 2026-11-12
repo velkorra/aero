@@ -1,90 +1,27 @@
 import QtQuick
 import QtQuick.Effects
-import Quickshell
-import Quickshell.Io
 
-// Vertical workspace list driven by `niri msg --json event-stream`.
-// The stream sends the full state on connect and incremental events after that,
-// so the list is kept in memory and never polled.
+// Vertical workspace list. The state comes from the Niri singleton.
 Item {
     id: root
 
     // Output (monitor) name to show workspaces for; empty shows every workspace.
     property string output: ""
-    property var workspaces: []
 
     readonly property var shown: {
-        const own = workspaces.filter(w => root.output === "" || w.output === root.output);
-        const list = own.length > 0 ? own : workspaces;
+        const all = Niri.workspaces;
+        const own = all.filter(w => root.output === "" || w.output === root.output);
+        const list = own.length > 0 ? own : all;
         return list.slice().sort((a, b) => a.idx - b.idx);
     }
 
     implicitWidth: 30
     implicitHeight: column.implicitHeight
 
-    function patch(id, changes) {
-        workspaces = workspaces.map(w => w.id === id ? Object.assign({}, w, changes) : w);
-    }
-
-    function handle(line) {
-        let event;
-        try {
-            event = JSON.parse(line);
-        } catch (error) {
-            return;
-        }
-
-        if (event.WorkspacesChanged) {
-            workspaces = event.WorkspacesChanged.workspaces;
-        } else if (event.WorkspaceActivated) {
-            const id = event.WorkspaceActivated.id;
-            const focused = event.WorkspaceActivated.focused;
-            const target = workspaces.find(w => w.id === id);
-            if (!target)
-                return;
-            workspaces = workspaces.map(w => {
-                const copy = Object.assign({}, w);
-                if (w.output === target.output)
-                    copy.is_active = w.id === id;
-                if (focused)
-                    copy.is_focused = w.id === id;
-                return copy;
-            });
-        } else if (event.WorkspaceActiveWindowChanged) {
-            patch(event.WorkspaceActiveWindowChanged.workspace_id, {
-                active_window_id: event.WorkspaceActiveWindowChanged.active_window_id
-            });
-        } else if (event.WorkspaceUrgencyChanged) {
-            patch(event.WorkspaceUrgencyChanged.id, { is_urgent: event.WorkspaceUrgencyChanged.urgent });
-        }
-    }
-
-    function action(args) {
-        Quickshell.execDetached(["niri", "msg", "action"].concat(args));
-    }
-
-    Process {
-        id: stream
-
-        command: ["niri", "msg", "--json", "event-stream"]
-        running: true
-        stdout: SplitParser {
-            onRead: line => root.handle(line)
-        }
-        onExited: reconnect.start()
-    }
-
-    Timer {
-        id: reconnect
-
-        interval: 2000
-        onTriggered: stream.running = true
-    }
-
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.NoButton
-        onWheel: event => root.action([event.angleDelta.y > 0 ? "focus-workspace-up" : "focus-workspace-down"])
+        onWheel: event => Niri.action([event.angleDelta.y > 0 ? "focus-workspace-up" : "focus-workspace-down"])
     }
 
     Column {
@@ -182,7 +119,7 @@ Item {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         if (slot.ws !== null)
-                            root.action(["focus-workspace", String(slot.ws.idx)]);
+                            Niri.action(["focus-workspace", String(slot.ws.idx)]);
                     }
                 }
             }

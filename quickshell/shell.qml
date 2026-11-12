@@ -7,6 +7,7 @@ ShellRoot {
     NotificationHistory {}
     ControlCenter {}
     WallpaperPicker {}
+    TrayPopup {}
 
     Component.onCompleted: Wallpapers.restore()
 }

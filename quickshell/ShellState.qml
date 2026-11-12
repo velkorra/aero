@@ -3,11 +3,13 @@ pragma Singleton
 import Quickshell
 import Quickshell.Io
 
-// Which popup is open ("control", "wallpaper", "history" or ""), plus script launching.
+// Which popup is open ("control", "wallpaper", "history", "tray" or ""), plus script launching.
 Singleton {
     id: root
 
     property string popup: ""
+    // Screen y of the tray button, so the tray flyout opens beside it.
+    property real trayY: 300
 
     function toggle(name) {
         popup = popup === name ? "" : name;

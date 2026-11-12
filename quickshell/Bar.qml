@@ -62,6 +62,26 @@ PanelWindow {
                 active: ShellState.popup === "wallpaper"
                 onClicked: ShellState.toggle("wallpaper")
             }
+
+            KeyboardLayout {
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
+
+            // Opens the tray flyout, like the "show hidden icons" arrow in Windows 7.
+            AeroButton {
+                id: trayButton
+
+                anchors.horizontalCenter: parent.horizontalCenter
+                implicitWidth: 28
+                implicitHeight: 28
+                iconSize: 12
+                icon: active ? Icons.caretLeft : Icons.caretRight
+                active: ShellState.popup === "tray"
+                onClicked: {
+                    ShellState.trayY = trayButton.mapToItem(null, 0, 0).y - 9;
+                    ShellState.toggle("tray");
+                }
+            }
         }
 
         // Inset groove holding the workspace beads.
