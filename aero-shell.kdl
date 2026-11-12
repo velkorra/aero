@@ -1,0 +1,53 @@
+// Niri settings for Aero Shell.
+// Copy this file to ~/.config/niri/aero-shell.kdl and add this line at the very
+// end of ~/.config/niri/config.kdl:
+//
+//     include "aero-shell.kdl"
+//
+// An include overrides what comes before it, so the key bindings below replace
+// any earlier bindings on the same keys.
+
+// Start the shell and the clipboard history watcher with the session.
+spawn-at-startup "qs"
+spawn-at-startup "wl-paste" "--watch" "cliphist" "store"
+
+binds {
+    Mod+D hotkey-overlay-title="Лаунчер" { spawn-sh "bash ~/.config/quickshell/scripts/launcher.sh"; }
+    Mod+Alt+V hotkey-overlay-title="Буфер обмена" { spawn-sh "bash ~/.config/quickshell/scripts/clipboard.sh"; }
+    Mod+A hotkey-overlay-title="Центр управления" { spawn "qs" "ipc" "call" "shell" "toggle" "control"; }
+    Mod+N hotkey-overlay-title="История уведомлений" { spawn "qs" "ipc" "call" "shell" "toggle" "history"; }
+    Mod+Shift+N hotkey-overlay-title="Не беспокоить" { spawn "qs" "ipc" "call" "shell" "dnd"; }
+    Mod+Shift+W hotkey-overlay-title="Обои" { spawn "qs" "ipc" "call" "shell" "toggle" "wallpaper"; }
+}
+
+// The shell asks niri for blur itself (ext-background-effect), so the bar, popups
+// and toasts need no rule. rofi does not ask, so its blur is enabled here.
+layer-rule {
+    match namespace="^rofi$"
+
+    geometry-corner-radius 12
+
+    background-effect {
+        blur true
+    }
+}
+
+// Optional. By default niri blurs only the wallpaper behind layer surfaces ("xray"),
+// which is cheap. Uncomment to blur the windows under popups and toasts as well;
+// niri marks this mode as experimental and it costs more GPU time.
+// layer-rule {
+//     match namespace="^aero-popup$"
+//     match namespace="^aero-toasts$"
+//
+//     background-effect {
+//         xray false
+//     }
+// }
+
+// Optional. Global blur strength.
+// blur {
+//     passes 3
+//     offset 3
+//     noise 0.02
+//     saturation 1.5
+// }

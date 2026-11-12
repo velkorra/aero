@@ -1,0 +1,89 @@
+/*
+ * Aero glass theme for rofi. This file is a matugen template: set-wallpaper.sh
+ * renders it into ~/.cache/aero-shell/rofi.rasi with the wallpaper palette.
+ * rofi colours are #RRGGBBAA.
+ */
+
+* {
+    accent:           {{colors.primary.default.hex}};
+    glass:            {{colors.primary_container.default.hex}}b3;
+    selection:        {{colors.primary.default.hex}}8c;
+    foreground:       #ffffff;
+    foreground-dim:   #ffffffb3;
+
+    background-color: transparent;
+    text-color:       @foreground;
+    font:             "Noto Sans 11";
+}
+
+window {
+    location:         north west;
+    anchor:           north west;
+    x-offset:         70px;
+    y-offset:         10px;
+    width:            430px;
+    border:           1px;
+    border-color:     #ffffff80;
+    border-radius:    12px;
+    background-color: @glass;
+    background-image: linear-gradient(to bottom, #ffffff59, #ffffff0d, #00000033);
+}
+
+mainbox {
+    padding:          12px;
+    spacing:          10px;
+    children:         [ inputbar, listview ];
+}
+
+inputbar {
+    padding:          8px 12px;
+    spacing:          8px;
+    border:           1px;
+    border-color:     #ffffff66;
+    border-radius:    8px;
+    background-color: #00000047;
+    children:         [ prompt, entry ];
+}
+
+prompt {
+    text-color:       @accent;
+}
+
+entry {
+    placeholder:       "Поиск";
+    placeholder-color: @foreground-dim;
+    cursor:            text;
+}
+
+listview {
+    lines:            9;
+    columns:          1;
+    spacing:          4px;
+    scrollbar:        false;
+    fixed-height:     true;
+}
+
+element {
+    padding:          7px 10px;
+    spacing:          10px;
+    border:           1px;
+    border-color:     transparent;
+    border-radius:    8px;
+}
+
+element selected {
+    border-color:     #ffffff99;
+    background-color: @selection;
+    background-image: linear-gradient(to bottom, #ffffff73, #ffffff14);
+}
+
+element-icon {
+    size:             28px;
+    cursor:           inherit;
+}
+
+element-text {
+    vertical-align:   0.5;
+    text-color:       inherit;
+    cursor:           inherit;
+}
