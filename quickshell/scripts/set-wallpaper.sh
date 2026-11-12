@@ -111,8 +111,11 @@ restore() {
         start_wallpaper "$file"
     fi
 
-    if [ ! -s "$CACHE/colors.json" ] || [ ! -s "$CACHE/rofi.rasi" ]; then
-        if [ -n "$file" ] && [ -f "$file" ]; then
+    # Regenerate when an output is missing or its template changed (e.g. after an update).
+    if [ ! -s "$CACHE/colors.json" ] || [ ! -s "$CACHE/rofi.rasi" ] ||
+        [ "$TEMPLATES/colors.json" -nt "$CACHE/colors.json" ] ||
+        [ "$TEMPLATES/rofi.rasi" -nt "$CACHE/rofi.rasi" ]; then
+        if [ ! -s "$FRAME" ] && [ -n "$file" ] && [ -f "$file" ]; then
             extract_frame "$file" || true
         fi
         generate_palette

@@ -2,8 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 
-// Toast notifications in the top-left corner. With no exclusive zone of its own
-// the window is laid out next to the bar, so toasts never cover it.
+// Toast notifications in the top-right corner.
 PanelWindow {
     id: window
 
@@ -11,11 +10,11 @@ PanelWindow {
 
     anchors {
         top: true
-        left: true
+        right: true
     }
     margins {
         top: Theme.gap
-        left: Theme.gap
+        right: Theme.gap
     }
     exclusiveZone: 0
     implicitWidth: 380
@@ -74,13 +73,13 @@ PanelWindow {
 
         add: Transition {
             ParallelAnimation {
-                NumberAnimation { property: "x"; from: -120; to: 0; duration: 260; easing.type: Easing.OutCubic }
+                NumberAnimation { property: "x"; from: 120; to: 0; duration: 260; easing.type: Easing.OutCubic }
                 NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 220 }
             }
         }
         remove: Transition {
             ParallelAnimation {
-                NumberAnimation { property: "x"; to: -80; duration: 220; easing.type: Easing.InCubic }
+                NumberAnimation { property: "x"; to: 80; duration: 220; easing.type: Easing.InCubic }
                 NumberAnimation { property: "opacity"; to: 0; duration: 220 }
             }
         }
@@ -96,7 +95,7 @@ PanelWindow {
 
             width: list.width
             notification: NotificationService.find(nid)
-            onBodyClicked: NotificationService.hideToast(nid)
+            onBodyClicked: NotificationService.activateToast(nid)
             onCloseClicked: {
                 if (notification !== null)
                     notification.dismiss();

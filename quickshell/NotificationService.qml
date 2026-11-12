@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.Notifications
 
 // Owns the notification server. Every notification stays tracked (this is the
@@ -35,6 +36,65 @@ Singleton {
         }
     }
 
+    // Click on a notification: bring the sender's window forward and run the
+    // notification's default action. Quickshell does not hand out activation
+    // tokens, so the app cannot raise itself; niri is asked to focus it instead.
+    function activate(n) {
+        if (n === null)
+            return;
+        const names = [n.desktopEntry, n.appName].filter(s => s !== "").map(s => s.toLowerCase());
+        if (names.length > 0 && !windowQuery.running) {
+            windowQuery.names = names;
+            windowQuery.running = true;
+        }
+        const action = Array.from(n.actions).find(a => a.identifier === "default");
+        if (action)
+            action.invoke();
+    }
+
+    function activateToast(id) {
+        const n = find(id);
+        hideToast(id);
+        activate(n);
+    }
+
+    // How well a niri window's app id matches the notification's sender names.
+    function matchScore(appId, names) {
+        const id = (appId ?? "").toLowerCase();
+        if (id === "")
+            return 0;
+        let best = 0;
+        for (const name of names) {
+            if (id === name)
+                best = Math.max(best, 3);
+            else if (id.endsWith("." + name) || name.endsWith("." + id))
+                best = Math.max(best, 2);
+            else if (id.includes(name) || name.includes(id))
+                best = Math.max(best, 1);
+        }
+        return best;
+    }
+
+    function focusSender(json, names) {
+        let windows;
+        try {
+            windows = JSON.parse(json);
+        } catch (error) {
+            return;
+        }
+        let target = null;
+        let targetScore = 0;
+        for (const w of windows) {
+            const score = matchScore(w.app_id, names);
+            if (score > targetScore) {
+                target = w;
+                targetScore = score;
+            }
+        }
+        if (target !== null)
+            Quickshell.execDetached(["niri", "msg", "action", "focus-window", "--id", String(target.id)]);
+    }
+
     function clearAll() {
         for (const n of list.slice())
             n.dismiss();
@@ -42,6 +102,19 @@ Singleton {
 
     ListModel {
         id: toastModel
+    }
+
+    Process {
+        id: windowQuery
+
+        property var names: []
+
+        command: ["niri", "msg", "--json", "windows"]
+        stdout: StdioCollector {
+            id: windowList
+
+            onStreamFinished: root.focusSender(windowList.text, windowQuery.names)
+        }
     }
 
     NotificationServer {

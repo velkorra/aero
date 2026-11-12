@@ -81,6 +81,10 @@ PopupLayer {
                 width: list.width
                 notification: modelData
                 onCloseClicked: modelData.dismiss()
+                onBodyClicked: {
+                    ShellState.close();
+                    NotificationService.activate(modelData);
+                }
             }
         }
 

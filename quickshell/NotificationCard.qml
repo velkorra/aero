@@ -46,6 +46,7 @@ AeroBox {
 
     MouseArea {
         anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
         onClicked: card.bodyClicked()
     }
 
@@ -148,7 +149,9 @@ AeroBox {
             Repeater {
                 id: actions
 
-                model: card.notification?.actions ?? []
+                // "default" is what a click on the card does; unlabeled actions have nothing to show.
+                model: card.notification === null ? []
+                    : Array.from(card.notification.actions).filter(a => a.identifier !== "default" && a.text !== "")
 
                 AeroButton {
                     required property var modelData
